@@ -118,7 +118,7 @@ Configure the plugin via **Settings → AnonChat**:
 
 ## Author
 
-**Marc**
+**Marc Kranat**
 
 ## Support
 
