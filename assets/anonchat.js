@@ -12,7 +12,38 @@
             document.addEventListener('DOMContentLoaded', () => {
                 this.setupContainers();
                 this.setupEventListeners();
+                this.checkUrlForCode();
             });
+        },
+        
+        checkUrlForCode: function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('anonchat');
+            if (code && code.length === 20) {
+                // Auto-show join modal if code is in URL
+                const container = document.querySelector('.anonchat-container');
+                if (container) {
+                    setTimeout(() => {
+                        this.showJoinModalWithCode(container, code);
+                    }, 500);
+                }
+            }
+        },
+        
+        showJoinModalWithCode: function(container, code) {
+            const modal = this.createModal('Join Chat', [
+                { label: 'Room Code (20 characters)', name: 'code', required: true, maxLength: 20, placeholder: 'Paste code here', defaultValue: code },
+                { label: 'Nickname (max 30 chars)', name: 'nickname', required: true, maxLength: 30 }
+            ], 'Join', (data) => {
+                this.joinRoom(data.code, data.nickname, container);
+            });
+            
+            document.body.appendChild(modal);
+            setTimeout(() => {
+                modal.classList.add('active');
+                const codeInput = modal.querySelector('[name="code"]');
+                if (codeInput) codeInput.value = code;
+            }, 10);
         },
         
         setupContainers: function() {
@@ -110,6 +141,7 @@
                                     ${field.required ? 'required' : ''} 
                                     ${field.maxLength ? `maxlength="${field.maxLength}"` : ''}
                                     ${field.placeholder ? `placeholder="${this.escapeHtml(field.placeholder)}"` : ''}
+                                    ${field.defaultValue ? `value="${this.escapeHtml(field.defaultValue)}"` : ''}
                                 />
                                 <div class="anonchat-error" style="display: none;"></div>
                             </div>
@@ -235,13 +267,25 @@
             const onlineCount = Object.keys(room.users || {}).length;
             const timeLeft = this.calculateTimeLeft(room.created, room.last_activity);
             
+            const shareUrl = window.location.origin + window.location.pathname + '?anonchat=' + this.currentCode;
+            
             widgetDiv.innerHTML = `
                 <div class="anonchat-header">
                     <div class="anonchat-room-info">
                         <div class="anonchat-room-name">${this.escapeHtml(room.name || 'Anonymous Chat')}</div>
                         <div class="anonchat-room-code">
-                            <span class="anonchat-code-text">${this.currentCode}</span>
-                            <button class="anonchat-copy-btn" data-code="${this.currentCode}">Copy</button>
+                            <div class="anonchat-code-label">Share this code with other participants:</div>
+                            <div class="anonchat-code-row">
+                                <span class="anonchat-code-text">${this.currentCode}</span>
+                                <button class="anonchat-copy-btn" data-code="${this.currentCode}">Copy Code</button>
+                            </div>
+                            <div class="anonchat-share-link">
+                                <div class="anonchat-link-label">Full link to this chat:</div>
+                                <div class="anonchat-link-row">
+                                    <input type="text" class="anonchat-link-input" value="${shareUrl}" readonly />
+                                    <button class="anonchat-copy-link-btn" data-url="${shareUrl}">Copy Link</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="anonchat-stats">
@@ -253,6 +297,9 @@
                             <span class="anonchat-stat-value" data-time-left="${timeLeft}">${this.formatTime(timeLeft)}</span>
                             <span>Time Left</span>
                         </div>
+                    </div>
+                    <div class="anonchat-actions">
+                        <button class="anonchat-kill-btn">Kill This Chat Room</button>
                     </div>
                 </div>
                 <div class="anonchat-messages" data-last-time="${this.lastMessageTime}"></div>
@@ -268,7 +315,7 @@
             // Render messages
             this.renderMessages(room.messages || []);
             
-            // Setup copy button
+            // Setup copy code button
             const copyBtn = widgetDiv.querySelector('.anonchat-copy-btn');
             if (copyBtn) {
                 copyBtn.addEventListener('click', () => {
@@ -278,6 +325,30 @@
                     setTimeout(() => {
                         copyBtn.textContent = originalText;
                     }, 2000);
+                });
+            }
+            
+            // Setup copy link button
+            const copyLinkBtn = widgetDiv.querySelector('.anonchat-copy-link-btn');
+            if (copyLinkBtn) {
+                copyLinkBtn.addEventListener('click', () => {
+                    const url = copyLinkBtn.dataset.url;
+                    this.copyToClipboard(url);
+                    const originalText = copyLinkBtn.textContent;
+                    copyLinkBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyLinkBtn.textContent = 'Copy Link';
+                    }, 2000);
+                });
+            }
+            
+            // Setup kill room button
+            const killBtn = widgetDiv.querySelector('.anonchat-kill-btn');
+            if (killBtn) {
+                killBtn.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to delete this chat room? This action cannot be undone.')) {
+                        this.killRoom(container);
+                    }
                 });
             }
             
@@ -534,6 +605,41 @@
             }
             const buttons = container.querySelector('.anonchat-buttons');
             if (buttons) buttons.style.display = 'flex';
+        },
+        
+        killRoom: function(container) {
+            if (!this.currentCode || !this.clientId) return;
+            
+            const formData = new FormData();
+            formData.append('action', 'anonchat_room');
+            formData.append('action_type', 'kill');
+            formData.append('code', this.currentCode);
+            formData.append('client_id', this.clientId);
+            formData.append('nonce', anonchatData.nonce);
+            
+            fetch(anonchatData.ajaxUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.stopPolling();
+                    this.currentCode = null;
+                    this.clientId = null;
+                    const widget = container.querySelector('.anonchat-widget');
+                    if (widget) {
+                        widget.innerHTML = '<div class="anonchat-loading" style="color: #d63638;">Chat room has been deleted.</div>';
+                    }
+                    const buttons = container.querySelector('.anonchat-buttons');
+                    if (buttons) buttons.style.display = 'flex';
+                } else {
+                    alert(data.data.message || 'Failed to delete room');
+                }
+            })
+            .catch(error => {
+                alert('Network error. Please try again.');
+            });
         },
         
         escapeHtml: function(text) {

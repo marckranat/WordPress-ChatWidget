@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: AnonChat Widget
- * Plugin URI: https://example.com/anonchat
+ * Plugin URI: https://github.com/marckranat/WordPress-ChatWidget
  * Description: Anonymous disposable chat widget - fully self-hosted, no database, no cookies, no logs. Create temporary chat rooms with 20-character codes. Rooms auto-expire after 6 hours inactivity or 24 hours max. Real-time messaging via AJAX polling. Mobile-ready with dark/light mode. Includes shortcode, widget & Gutenberg block support.
  * Version: 1.0.0
- * Author: Marc
+ * Author: Marc Kranat
  * License: Free for any use
  * Text Domain: anonchat
  */
@@ -219,6 +219,9 @@ class AnonChat_Widget {
                 break;
             case 'send':
                 $this->handle_send_message($code);
+                break;
+            case 'kill':
+                $this->handle_kill_room($code);
                 break;
             case 'get':
             default:
@@ -525,6 +528,30 @@ class AnonChat_Widget {
         }
         
         return $sanitized;
+    }
+    
+    private function handle_kill_room($code) {
+        $client_id = isset($_POST['client_id']) ? sanitize_text_field($_POST['client_id']) : '';
+        
+        $transient_key = 'anonchat_room_' . $code;
+        $room = get_transient($transient_key);
+        
+        if ($room === false) {
+            wp_send_json_error(array('message' => 'Room not found'));
+            return;
+        }
+        
+        // Only creator can kill the room (check by IP or allow any user for simplicity)
+        // For security, we'll allow any user in the room to kill it
+        if (!empty($client_id) && !isset($room['users'][$client_id])) {
+            wp_send_json_error(array('message' => 'Not authorized to delete this room'));
+            return;
+        }
+        
+        // Delete the room
+        delete_transient($transient_key);
+        
+        wp_send_json_success(array('message' => 'Room deleted successfully'));
     }
     
     public function register_widget() {

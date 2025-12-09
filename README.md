@@ -15,7 +15,7 @@ A fully self-hosted WordPress plugin for anonymous, disposable chat rooms. No re
 
 ## Installation
 
-1. Upload the `WPChat` folder to `/wp-content/plugins/`
+1. Upload the `anonchat-widget` folder to `/wp-content/plugins/`
 2. Activate the "AnonChat Widget" plugin through the 'Plugins' menu in WordPress
 3. Start using it via shortcode, widget, or Gutenberg block
 
@@ -119,6 +119,8 @@ Configure the plugin via **Settings → AnonChat**:
 ## Author
 
 **Marc Kranat**
+
+Plugin URI: https://github.com/marckranat/WordPress-ChatWidget
 
 ## Support
 

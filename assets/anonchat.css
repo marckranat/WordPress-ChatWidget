@@ -46,10 +46,8 @@
     background: var(--anonchat-header-bg, #f5f5f5);
     border-bottom: 1px solid #ddd;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .anonchat-room-info {
@@ -64,33 +62,122 @@
 }
 
 .anonchat-room-code {
-    font-family: 'Courier New', monospace;
     font-size: 14px;
     color: #666;
+    margin-top: 10px;
+}
+
+.anonchat-code-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.anonchat-code-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-bottom: 10px;
 }
 
 .anonchat-code-text {
+    font-family: 'Courier New', monospace;
     background: #fff;
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
     border: 1px solid #ddd;
+    flex: 1;
+    font-size: 13px;
 }
 
 .anonchat-copy-btn {
-    padding: 4px 12px;
+    padding: 6px 12px;
     font-size: 12px;
     border: 1px solid #ddd;
     background: #fff;
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.2s;
+    white-space: nowrap;
 }
 
 .anonchat-copy-btn:hover {
     background: #f0f0f0;
+}
+
+.anonchat-share-link {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.anonchat-link-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.anonchat-link-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.anonchat-link-input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    background: #fff;
+    color: #333;
+}
+
+.anonchat-link-input:focus {
+    outline: none;
+    border-color: var(--anonchat-accent, #0073aa);
+}
+
+.anonchat-copy-link-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.anonchat-copy-link-btn:hover {
+    background: #f0f0f0;
+}
+
+.anonchat-actions {
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.anonchat-kill-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    border: 1px solid #d63638;
+    background: #fff;
+    color: #d63638;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.anonchat-kill-btn:hover {
+    background: #d63638;
+    color: #fff;
 }
 
 .anonchat-stats {
@@ -98,6 +185,8 @@
     gap: 15px;
     font-size: 13px;
     color: #666;
+    width: 100%;
+    justify-content: flex-start;
 }
 
 .anonchat-stat {
@@ -346,6 +435,40 @@
     
     .anonchat-copy-btn:hover {
         background: #2a2a2a;
+    }
+    
+    .anonchat-link-input {
+        background: #1e1e1e;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+    
+    .anonchat-copy-link-btn {
+        background: #1e1e1e;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+    
+    .anonchat-copy-link-btn:hover {
+        background: #2a2a2a;
+    }
+    
+    .anonchat-share-link {
+        border-color: #444;
+    }
+    
+    .anonchat-actions {
+        border-color: #444;
+    }
+    
+    .anonchat-kill-btn {
+        border-color: #d63638;
+        color: #d63638;
+    }
+    
+    .anonchat-kill-btn:hover {
+        background: #d63638;
+        color: #fff;
     }
     
     .anonchat-input {
